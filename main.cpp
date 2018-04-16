@@ -42,6 +42,7 @@ int main (int argc, char ** argv ) {
 	int PatternNumber;
 	text >> PatternNumber; 	
     vector<WeightedSequence> W;
+	vector<int> length;
 	W.reserve ( PatternNumber );
 	for ( int i = 0; i < PatternNumber; i++ )
 	{
@@ -74,16 +75,19 @@ int main (int argc, char ** argv ) {
 	while ( true ) {
 		string pattern;
 		if ( !(patterns>>pattern) ) break;
-		vector<int> Occ = WST->occurrences(pattern);
-		if ( Occ.empty() ){
-			output << "Not found\n";
-		}else{
-			for ( auto p : Occ ){
-				output << p << " ";
+		vector<vector<int>> Occ = WST->occurrences(pattern, PatternNumber);
+		for ( int i = 0; i < PatternNumber; i++ ){
+			if ( Occ[i].empty() ){
+				output << "pattern " << i << " not found\n";
+			}
+			else{
+				output << i << ": ";
+				for ( auto p : Occ[i] ){
+					output << p << " ";
 				}
 				output << endl;
-			}	
-		
+			}
+		}
 	}
 	output << endl;
 	output.close();

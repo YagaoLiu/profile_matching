@@ -60,7 +60,7 @@ void WeightedSequence::build_zstring(double z, bool quiet, std::ostream& result)
         auto end = get_time::now();
         auto diff = end - begin;
         result << z << "-estimation constructed in " << chrono::duration_cast<chrono::milliseconds>(diff).count() << " milliseconds."<< endl;
-        result << z << "-estimation:" << endl << S;
+//        result << z << "-estimation:" << endl << S;
         result << endl;
     }
 }
@@ -109,7 +109,7 @@ PropertySuffixTree * build_index( double z, bool quiet, vector<WeightedSequence>
         auto end = get_time::now();
         auto diff = end - begin;
         result << "Weighted Index Constructed in " << chrono::duration_cast<chrono::milliseconds>(diff).count() << " milliseconds."<< endl;
-		result << endl << "Property Suffix Tree:" << endl << *WST;
+//		result << endl << "Property Suffix Tree:" << endl << *WST;
 		result << endl << "Answers to queries:" << endl;
     }
 	return WST;
@@ -121,9 +121,9 @@ bool WeightedSequence::contains(std::string const& P) const {
 
 vector<int> WeightedSequence::occurrences(std::string const& P) const {
     std::set<int> occs;
-	for (int o : weighted_index->occurrences(P)) {
-        occs.insert(o);
-    }
+//	for (int o : weighted_index->occurrences(P)) {
+  //      occs.insert(o);
+ //   }
     return vector<int>(occs.begin(), occs.end());
 }
 

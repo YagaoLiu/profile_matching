@@ -29,6 +29,7 @@ class PropertySuffixTree {
 		stNode* parent = NULL;
         unordered_map<char, stNode*> children;
         position begin, end;
+		int depth = 0;
 	    int PatternID;	
         vector<int> labels;
         
@@ -75,6 +76,6 @@ public:
 	
 	void EndingNodeMark(vector<Path> &V) const;  
     bool contains(string const &P) const;
-    vector<int> occurrences(string const &P) const;
+    vector<vector<int>> occurrences(string const &P, int n) const;
     ~PropertySuffixTree();
 };

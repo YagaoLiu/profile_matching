@@ -54,7 +54,7 @@ void PropertySuffixTree::stNode::print(ostream &out, int d) const {
 //	out << "  " << *this->begin;
 //	out << "  " << *(this->end-1);
     d += end-begin;
-//    for (auto const &l : labels) out << " " << l;
+//  for (auto const &l : labels) out << " " << l;
 //	out << "  " << PatternID;
     out << endl;
     for (auto const &ch : children) ch.second->print(out, d);
@@ -101,7 +101,6 @@ void PropertySuffixTree::Locus::fast_forward(){
         } else break;
     } 
 }
-
 
 PropertySuffixTree::stNode* PropertySuffixTree::Locus::make_explicit() {
     fast_forward();
@@ -197,8 +196,8 @@ void PropertySuffixTree::process_property(const vector<int>& pi) {
         loc.node->labels.push_back(label);
     }
     root->trim(true);
-	root->print(cout, 0);
 	root->compute_suf_link();
+//	root->print(cout, -1);
 }
 
 void PropertySuffixTree::stNode::compute_suf_link(){
@@ -206,6 +205,7 @@ void PropertySuffixTree::stNode::compute_suf_link(){
 	for ( auto it : this->children )
 	{
 		it.second->parent = this;
+		it.second->depth = (it.second->end-it.second->begin);
 		q.push_back ( it.second );
 	}
 	while ( !q.empty() ){
@@ -214,9 +214,9 @@ void PropertySuffixTree::stNode::compute_suf_link(){
 		for ( auto it : cur->children )
 		{
 			it.second->parent = cur;
+			it.second->depth = cur->depth + (it.second->end - it.second->begin);
 			q.push_back ( it.second );
 		}
-		cout << cur << ":" << *cur->begin << " " << *cur->end <<  endl;
 		if ( cur->parent == this ){
 			Locus sl = Locus( this, cur->begin+1, cur->end );
 			sl.fast_forward();
@@ -224,10 +224,10 @@ void PropertySuffixTree::stNode::compute_suf_link(){
 		}
 		else{
 			Locus sl = Locus( cur->parent->suf_link, cur->begin, cur->end );
+			sl.begin -= (cur->parent->depth - 1) - sl.node->depth;
 			sl.fast_forward();
 			cur->suf_link = sl.node;
 		}
-		cout << cur->suf_link << endl;
 	}
 }
 
@@ -253,34 +253,29 @@ bool PropertySuffixTree::contains(string const &P) const {
     return (find(P).end == P.end());
 }
 
-vector<int> PropertySuffixTree::occurrences(string const& P) const {
-	vector<int> res;
+vector<vector<int>> PropertySuffixTree::occurrences(string const& P, int n) const {
+	vector<vector<int>> res(n);
 	PropertySuffixTree::Locus l(root, P.begin(), P.begin());
 	l.forward(P.end());
-	//unsigned int i = 0;
+	if ( l.node->PatternID >= 0 ){
+		res[l.node->PatternID].push_back( l.end-P.begin() );
+	}
+
 	while ( l.end != P.end() ){
-//		cout << i << " " << l.begin - P.begin() << endl;
 		l.node = l.node->suf_link;
 		l.end = l.begin;
 		l.forward( P.end() );
 		if ( l.node->PatternID >= 0 ){
-			res.push_back( l.node->PatternID );
-	//		cout << l.end - P.begin() << endl;
+			res[l.node->PatternID].push_back( l.end-P.begin() );
 		}
-	//	i++;
+
 	}
 	stNode* last = l.descendant();
 	while ( last != root ){
-//		cout << i << endl;
 		if ( last->PatternID >= 0 )
-			res.push_back( last->PatternID );
+			res[l.node->PatternID].push_back( l.end-P.begin() );
 		last = last->suf_link;
-//		i--;
 	}
-	for ( auto i : res ){
-		cout << i << endl;
-	}
-	cout << "end of search" << endl;
 	return res;
 }
 
