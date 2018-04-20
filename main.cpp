@@ -54,6 +54,10 @@ int main (int argc, char ** argv ) {
 	    W.push_back(w);
 		pattern.close();
 	}
+	for ( auto w : W )
+	{
+		length.push_back( w.length() );
+	}
 	PropertySuffixTree * WST = build_index(st.z, st.quiet, W, output);
 /*
 	while ( true )  {
@@ -83,7 +87,7 @@ int main (int argc, char ** argv ) {
 			else{
 				output << i << ": ";
 				for ( auto p : Occ[i] ){
-					output << p << " ";
+					output << p - length[i] << " ";
 				}
 				output << endl;
 			}
