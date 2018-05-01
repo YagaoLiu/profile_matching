@@ -26,7 +26,6 @@ class PropertySuffixTree {
 	typedef string::const_iterator position;
     struct stNode {
         stNode* suf_link;
-		stNode* parent = NULL;
         unordered_map<char, stNode*> children;
         position begin, end;
 		int depth = 0;
@@ -42,6 +41,7 @@ class PropertySuffixTree {
         
         stNode* trim(bool is_root = false);
 		void compute_suf_link();
+		void compute_depth();
         void list(vector<int> &l) const;
     };
     
@@ -75,6 +75,7 @@ public:
     PropertySuffixTree(PropertyString const& S);
 	
 	void EndingNodeMark(vector<Path> &V) const;  
+	void marking( string path, int pID );
     bool contains(string const &P) const;
     vector<vector<int>> occurrences(string const &P, int n) const;
     ~PropertySuffixTree();

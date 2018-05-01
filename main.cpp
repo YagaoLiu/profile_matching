@@ -87,7 +87,7 @@ int main (int argc, char ** argv ) {
 			else{
 				output << i << ": ";
 				for ( auto p : Occ[i] ){
-					output << p - length[i] << " ";
+					output << p - length[i] << " " << pattern.substr(p-length[i], length[i] ) << '\n';
 				}
 				output << endl;
 			}

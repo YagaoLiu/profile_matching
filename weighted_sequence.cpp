@@ -83,7 +83,6 @@ PropertySuffixTree * build_index( double z, bool quiet, vector<WeightedSequence>
 			T += s;
 		}
 	}
-	result << T << endl;
 	PropertySuffixTree * WST = new PropertySuffixTree(T);
 	std::vector<Path> V;
 	int index = 0;
@@ -95,15 +94,20 @@ PropertySuffixTree * build_index( double z, bool quiet, vector<WeightedSequence>
 		{	
 			if ( T.pi(index) == int(w.length()) )
 			{
-				Path valid(position, position+w.length()-1, id);
-				V.push_back( valid );
+				string path = T.string().substr( index, w.length() );
+				WST->marking( path, id );
+				if ( path == "GTAAAAGAAAAACCAA" )
+					cout << "YES" << endl;
+
+//				Path valid(position, position+w.length()-1, id);
+//				V.push_back( valid );
 			}
 			index += w.length();
 			position += w.length();
 		}
 		id += 1;
 	}		
-	WST->EndingNodeMark( V );
+//	WST->EndingNodeMark( V );i
     
     if (!quiet) {
         auto end = get_time::now();

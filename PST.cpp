@@ -55,7 +55,7 @@ void PropertySuffixTree::stNode::print(ostream &out, int d) const {
 //	out << "  " << *(this->end-1);
     d += end-begin;
 //  for (auto const &l : labels) out << " " << l;
-//	out << "  " << PatternID;
+	out << "  " << PatternID;
     out << endl;
     for (auto const &ch : children) ch.second->print(out, d);
 }
@@ -200,36 +200,42 @@ void PropertySuffixTree::process_property(const vector<int>& pi) {
 //	root->print(cout, -1);
 }
 
-void PropertySuffixTree::stNode::compute_suf_link(){
+void PropertySuffixTree::stNode::compute_depth(){
+	this->depth = 0;
 	deque<stNode*> q;
-	for ( auto it : this->children )
-	{
-		it.second->parent = this;
-		it.second->depth = (it.second->end-it.second->begin);
+	q.push_back(this);
+	while ( !q.empty() ){
+		stNode * cur = q.front();
+		q.pop_front();
+		for ( auto it : cur->children ){
+			it.second->depth = cur->depth + (it.second->end - it.second->begin);
+			q.push_back ( it.second );
+		}
+	}
+}
+
+void PropertySuffixTree::stNode::compute_suf_link(){
+	this->compute_depth();
+	deque<stNode*> q;
+	for ( auto it : this->children ){
 		q.push_back ( it.second );
+		Locus sl = Locus( this, it.second->begin+1, it.second->end );
+		sl.fast_forward();
+		it.second->suf_link = sl.node;
 	}
 	while ( !q.empty() ){
 		stNode * cur = q.front();
 		q.pop_front();
-		for ( auto it : cur->children )
-		{
-			it.second->parent = cur;
-			it.second->depth = cur->depth + (it.second->end - it.second->begin);
+		for ( auto it : cur->children ){
 			q.push_back ( it.second );
-		}
-		if ( cur->parent == this ){
-			Locus sl = Locus( this, cur->begin+1, cur->end );
+			Locus sl = Locus ( cur->suf_link, it.second->begin, it.second->end );
+			sl.begin -= ( cur->depth-1 ) - sl.node->depth;
 			sl.fast_forward();
-			cur->suf_link = sl.node;
-		}
-		else{
-			Locus sl = Locus( cur->parent->suf_link, cur->begin, cur->end );
-			sl.begin -= (cur->parent->depth - 1) - sl.node->depth;
-			sl.fast_forward();
-			cur->suf_link = sl.node;
+			it.second->suf_link = sl.node;
 		}
 	}
 }
+		
 
 PropertySuffixTree::PropertySuffixTree(PropertyString const& S): text(S.string()) {
     build_suffix_tree();
@@ -249,6 +255,12 @@ void PropertySuffixTree::EndingNodeMark(vector<Path> &V) const{
 	}
 }
 
+void PropertySuffixTree::marking( string path, int pID ){
+	Locus valid( root, path.begin(), path.end() );
+	valid.fast_forward();
+	valid.node->PatternID = pID;
+}
+
 bool PropertySuffixTree::contains(string const &P) const {
     return (find(P).end == P.end());
 }
@@ -260,20 +272,21 @@ vector<vector<int>> PropertySuffixTree::occurrences(string const& P, int n) cons
 	if ( l.node->PatternID >= 0 ){
 		res[l.node->PatternID].push_back( l.end-P.begin() );
 	}
-
 	while ( l.end != P.end() ){
+		int gap = l.node->depth - 1 - l.node->suf_link->depth;
 		l.node = l.node->suf_link;
+		l.begin -= gap;
 		l.end = l.begin;
 		l.forward( P.end() );
 		if ( l.node->PatternID >= 0 ){
 			res[l.node->PatternID].push_back( l.end-P.begin() );
 		}
-
 	}
 	stNode* last = l.descendant();
 	while ( last != root ){
-		if ( last->PatternID >= 0 )
+		if ( last->PatternID >= 0 ){
 			res[l.node->PatternID].push_back( l.end-P.begin() );
+		}
 		last = last->suf_link;
 	}
 	return res;
